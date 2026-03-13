@@ -6,6 +6,25 @@ const router = Router();
 
 const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
 
+function buildPrompt(reading, baseline, trends, history, cycleNum, activity) {
+  const b = baseline || { hr: 72, spo2: 97, temp: 36.6, hrv: 45 };
+  const activityLine = activity
+    ? `\nCurrent activity: ${activity.label} (${activity.durationMinutes} min)
+       Expected HR range for this activity: ${activity.expectedHRRange} bpm
+       Expected SpO2 minimum: ${activity.expectedSpo2Min}%
+       Note: ${activity.note}
+       IMPORTANT: Adjust thresholds accordingly — elevated HR during ${activity.type} is normal.`
+    : '';
+
+  return `Patient vital reading #${cycleNum || 1}:
+Current: HR=${reading.hr}bpm, SpO2=${reading.spo2}%, Temp=${reading.temp}°C, HRV=${reading.hrv}ms
+Personal baseline: HR=${b.hr.toFixed(1)} SpO2=${b.spo2.toFixed(1)}% Temp=${b.temp.toFixed(1)}°C HRV=${b.hrv.toFixed(1)}ms
+Deviations: HR=${(reading.hr-b.hr).toFixed(1)} SpO2=${(reading.spo2-b.spo2).toFixed(1)}% Temp=${(reading.temp-b.temp).toFixed(1)} HRV=${(reading.hrv-b.hrv).toFixed(1)}ms
+Trends: HR=${trends?.hr} SpO2=${trends?.spo2} Temp=${trends?.temp} HRV=${trends?.hrv}
+Last risk: ${history?.lastRisk} | Pattern: ${history?.lastPattern}${activityLine}
+Respond with JSON only.`;
+}
+
 const SYSTEM_PROMPT = `You are SwasthSathi AI — an autonomous clinical escalation agent.
 You analyze real-time patient vital signs and make risk assessments.
 You MUST respond with ONLY a valid JSON object. No preamble, no explanation outside JSON.
@@ -32,7 +51,7 @@ Rules:
 
 // POST /api/agent/analyze
 router.post('/analyze', async (req, res) => {
-  const { reading, baseline, trends, history, cycleNum } = req.body;
+  const { reading, baseline, trends, history, cycleNum, activity } = req.body;
 
   if (!reading) {
     return res.status(400).json({ error: 'Missing reading data' });
@@ -47,13 +66,7 @@ router.post('/analyze', async (req, res) => {
     return res.json(mock);
   }
 
-  const userPrompt = `Patient vital reading #${cycleNum || 1}:
-Current: HR=${reading.hr}bpm, SpO2=${reading.spo2}%, Temp=${reading.temp}°C, HRV=${reading.hrv}ms
-Personal baseline: HR=${(baseline?.hr || 72).toFixed(1)}bpm, SpO2=${(baseline?.spo2 || 97).toFixed(1)}%, Temp=${(baseline?.temp || 36.6).toFixed(1)}°C, HRV=${(baseline?.hrv || 45).toFixed(1)}ms
-Deviations: HR=${(reading.hr - (baseline?.hr || 72)).toFixed(1)}, SpO2=${(reading.spo2 - (baseline?.spo2 || 97)).toFixed(1)}%, Temp=${(reading.temp - (baseline?.temp || 36.6)).toFixed(1)}, HRV=${(reading.hrv - (baseline?.hrv || 45)).toFixed(1)}ms
-60-second trends: HR=${trends?.hr || 'stable'}, SpO2=${trends?.spo2 || 'stable'}, Temp=${trends?.temp || 'stable'}, HRV=${trends?.hrv || 'stable'}
-Last risk score: ${history?.lastRisk || 0} | Last pattern: ${history?.lastPattern || 'NORMAL'}
-Assess and respond with JSON only.`;
+  const userPrompt = buildPrompt(reading, baseline, trends, history, cycleNum, activity);
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {

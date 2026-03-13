@@ -7,6 +7,8 @@ export const useAgentStore = create((set, get) => ({
   readings:  [],
   baseline:  { ...DEFAULT_BASELINE },
   latest:    { hr: 72, spo2: 97, temp: 36.6, hrv: 45, timestamp: Date.now() },
+  currentActivity: 'resting',
+  activityStartedAt: null,
 
   addReading(reading) {
     set(state => {
@@ -26,6 +28,10 @@ export const useAgentStore = create((set, get) => ({
       return { readings, baseline, latest: reading }
     })
   },
+
+emergencyPhone: '+918600710162',
+sessionId: `session_${Date.now()}`,
+setEmergencyPhone: (phone) => set({ emergencyPhone: phone }),
 
   // ── Agent ────────────────────────────────────────────────────
   agent: {
@@ -96,4 +102,9 @@ export const useAgentStore = create((set, get) => ({
   // ── Streaming text ───────────────────────────────────────────
   streamingText: '',
   setStreamingText(t)    { set({ streamingText: t }) },
+
+  setActivity: (activity) => set({
+    currentActivity: activity,
+    activityStartedAt: Date.now(),
+  }),
 }))

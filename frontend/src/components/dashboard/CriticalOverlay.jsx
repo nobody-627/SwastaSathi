@@ -2,7 +2,7 @@ import { AlertTriangle, X, Phone, MapPin, Heart } from 'lucide-react'
 import { useAgentStore } from '../../store/agentStore'
 
 export default function CriticalOverlay() {
-  const { agent, latest, setShowOverlay } = useAgentStore()
+  const { agent, latest, setShowOverlay, emergencyPhone, setEmergencyPhone } = useAgentStore()
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -66,6 +66,18 @@ export default function CriticalOverlay() {
                 <span className={`text-xs font-medium ${color}`}>{text}</span>
               </div>
             ))}
+          </div>
+
+          {/* Emergency contact input */}
+          <div className="mb-6">
+            <label className="text-xs font-semibold text-gray-600 mb-1 block">Emergency contact number</label>
+            <input
+              type="tel"
+              placeholder="Emergency contact number (e.g. 9876543210)"
+              value={emergencyPhone}
+              onChange={(e) => setEmergencyPhone(e.target.value)}
+              className="w-full border border-rose-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+            />
           </div>
 
           {/* Dismiss */}

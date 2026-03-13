@@ -8,6 +8,7 @@ import VitalsCard       from '../components/dashboard/VitalsCard'
 import RiskGauge        from '../components/dashboard/RiskGauge'
 import VitalsChart      from '../components/dashboard/VitalsChart'
 import AgentPanel       from '../components/dashboard/AgentPanel'
+import ActivitySelector from '../components/dashboard/ActivitySelector'
 import AuditLog         from '../components/dashboard/AuditLog'
 import CriticalOverlay  from '../components/dashboard/CriticalOverlay'
 import DemoControls     from '../components/dashboard/DemoControls'
@@ -94,6 +95,7 @@ export default function Dashboard() {
           {/* ── LEFT SIDEBAR ──────────────────────────────────── */}
           <div className="flex flex-col gap-4 order-2 xl:order-1">
             <AgentPanel />
+            <ActivitySelector />
             <RiskGauge
               score={agent.riskScore}
               pattern={agent.pattern}

@@ -3,11 +3,12 @@ const router = express.Router();
 
 // Mock ML model for disease prediction
 function predictDisease(data) {
-  const { heartRate, oxygenLevel, temperature, symptoms, age, gender } = data;
+  const { heartRate, oxygenLevel, temperature, symptoms = [], age, gender } = data;
+  const safeSymptoms = Array.isArray(symptoms) ? symptoms : [];
   const predictions = [];
   
   // Respiratory conditions
-  if (oxygenLevel < 95 || symptoms.includes('shortness of breath') || symptoms.includes('cough')) {
+  if (oxygenLevel < 95 || safeSymptoms.includes('shortness of breath') || safeSymptoms.includes('cough')) {
     predictions.push({
       disease: 'Respiratory Infection',
       probability: 0.75,
@@ -17,7 +18,7 @@ function predictDisease(data) {
   }
   
   // Cardiac conditions
-  if (heartRate > 90 || symptoms.includes('chest pain') || symptoms.includes('palpitations')) {
+  if (heartRate > 90 || safeSymptoms.includes('chest pain') || safeSymptoms.includes('palpitations')) {
     predictions.push({
       disease: 'Cardiac Condition',
       probability: 0.70,
@@ -27,7 +28,7 @@ function predictDisease(data) {
   }
   
   // Fever/Infection
-  if (temperature > 37.5 || symptoms.includes('fever') || symptoms.includes('headache') || symptoms.includes('body ache')) {
+  if (temperature > 37.5 || safeSymptoms.includes('fever') || safeSymptoms.includes('headache') || safeSymptoms.includes('body ache')) {
     predictions.push({
       disease: 'Viral/Bacterial Infection',
       probability: 0.68,
@@ -37,7 +38,7 @@ function predictDisease(data) {
   }
   
   // Gastrointestinal
-  if (symptoms.includes('nausea') || symptoms.includes('vomiting') || symptoms.includes('abdominal pain') || symptoms.includes('diarrhea')) {
+  if (safeSymptoms.includes('nausea') || safeSymptoms.includes('vomiting') || safeSymptoms.includes('abdominal pain') || safeSymptoms.includes('diarrhea')) {
     predictions.push({
       disease: 'Gastrointestinal Issue',
       probability: 0.65,
@@ -47,7 +48,7 @@ function predictDisease(data) {
   }
   
   // Fatigue/General
-  if (symptoms.includes('fatigue') || symptoms.includes('dizziness') || symptoms.includes('sweating')) {
+  if (safeSymptoms.includes('fatigue') || safeSymptoms.includes('dizziness') || safeSymptoms.includes('sweating')) {
     predictions.push({
       disease: 'General Fatigue/Stress',
       probability: 0.55,
@@ -57,7 +58,7 @@ function predictDisease(data) {
   }
   
   // Cold/Flu symptoms
-  if (symptoms.includes('sore throat') || symptoms.includes('runny nose') || symptoms.includes('loss of taste') || symptoms.includes('loss of smell')) {
+  if (safeSymptoms.includes('sore throat') || safeSymptoms.includes('runny nose') || safeSymptoms.includes('loss of taste') || safeSymptoms.includes('loss of smell')) {
     predictions.push({
       disease: 'Upper Respiratory Infection (Cold/Flu)',
       probability: 0.60,
@@ -85,10 +86,10 @@ router.post('/predict', (req, res) => {
     }
     
     const data = {
-      heartRate: vitals.heartRate || 70,
-      oxygenLevel: vitals.oxygenLevel || 98,
-      temperature: vitals.temperature || 36.5,
-      symptoms: symptoms,
+      heartRate: Number(vitals.heartRate) || 70,
+      oxygenLevel: Number(vitals.oxygenLevel) || 98,
+      temperature: Number(vitals.temperature) || 36.5,
+      symptoms: Array.isArray(symptoms) ? symptoms : [],
       age: demographics?.age || 30,
       gender: demographics?.gender || 'other'
     };
@@ -96,6 +97,7 @@ router.post('/predict', (req, res) => {
     const result = predictDisease(data);
     res.json(result);
   } catch (error) {
+    console.error('[Prediction] Error:', error.message);
     res.status(500).json({ error: 'Prediction failed' });
   }
 });

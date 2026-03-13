@@ -10,6 +10,7 @@ import vitalsRouter from './routes/vitals.js';
 import agentRouter from './routes/agent.js';
 import authRouter from './routes/auth.js';
 import predictionRouter from './routes/prediction.js';
+import emergencyRouter from './routes/emerggency.js';
 
 config();
 
@@ -151,6 +152,8 @@ app.use((err, req, res, next) => {
   console.error('[Error]', err);
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
+
+app.use('/api/emergency', emergencyRouter);
 
 // ── Start ─────────────────────────────────────────────────────
 httpServer.listen(PORT, () => {

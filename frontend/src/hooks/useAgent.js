@@ -5,6 +5,17 @@ import { api } from '../api/client'
 // ── Helpers ───────────────────────────────────────────────────
 const noise = r => (Math.random() - 0.5) * r
 
+export const ACTIVITIES = {
+  resting:   { label: '😴 Resting',    hrMod: 0,   hrMax: 80,  spo2Min: 96, note: 'Baseline resting state' },
+  walking:   { label: '🚶 Walking',    hrMod: +20, hrMax: 110, spo2Min: 95, note: 'Light activity' },
+  running:   { label: '🏃 Running',    hrMod: +60, hrMax: 170, spo2Min: 93, note: 'Intense cardio' },
+  cycling:   { label: '🚴 Cycling',    hrMod: +50, hrMax: 160, spo2Min: 93, note: 'Moderate-intense' },
+  yoga:      { label: '🧘 Yoga',       hrMod: +10, hrMax: 100, spo2Min: 95, note: 'Light stretching' },
+  sleeping:  { label: '🛌 Sleeping',   hrMod: -10, hrMax: 70,  spo2Min: 94, note: 'Sleep — HRV may dip' },
+  climbing:  { label: '🧗 Climbing',   hrMod: +70, hrMax: 180, spo2Min: 92, note: 'High altitude risk' },
+  swimming:  { label: '🏊 Swimming',   hrMod: +40, hrMax: 150, spo2Min: 94, note: 'Breath-hold risk' },
+}
+
 export function generateVital(baseline, mode) {
   if (!mode) return {
     hr:   Math.round(baseline.hr   + noise(8)),
@@ -43,6 +54,29 @@ export function gaugeColor(score) {
   return '#10b981'
 }
 
+// Call this once when dashboard mounts
+export function useLocationTracking(sessionId) {
+  useEffect(() => {
+    if (!navigator.geolocation) return
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        // Send to backend every time position updates
+        api.post('/emergency/location', {
+          sessionId,
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        }).catch(() => {})
+      },
+      (err) => console.warn('[GPS]', err.message),
+      { enableHighAccuracy: true, maximumAge: 10000 }
+    )
+
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [sessionId])
+}
+
 // ── Main hook ─────────────────────────────────────────────────
 export function useAgent() {
   const store       = useAgentStore()
@@ -71,8 +105,19 @@ export function useAgent() {
     if (result.risk_score >= 8 && result.action === 'RED_ALERT' && now > escalation.t3.cooldownUntil) {
       fireEscalation('t3', 60_000)
       setShowOverlay(true)
+      // Fire emergency SMS to the configured contact
+      const { emergencyPhone, latest } = useAgentStore.getState()
+      api.post('/emergency/alert', {
+        sessionId: sessionId.current,
+        vitals: latest,
+        riskScore: result.risk_score,
+        pattern: result.pattern,
+        phone: emergencyPhone,
+      }).catch(console.error)
     }
+    
   }, [store])
+  
 
   useEffect(() => {
     if (!store.isRunning) return
@@ -92,6 +137,8 @@ export function useAgent() {
       // 2. Calc trends from current readings snapshot
       const readings = useAgentStore.getState().readings
       const baseline = useAgentStore.getState().baseline
+      const { currentActivity, activityStartedAt } = useAgentStore.getState()
+      const activityMeta = ACTIVITIES[currentActivity] || ACTIVITIES.resting
       const trends = {
         hr:   calcTrend(readings, 'hr'),
         spo2: calcTrend(readings, 'spo2'),
@@ -110,6 +157,16 @@ export function useAgent() {
           trends,
           history: lastRiskRef.current,
           cycleNum: cycleRef.current,
+          activity: {
+            type: currentActivity,
+            label: activityMeta.label,
+            durationMinutes: activityStartedAt
+              ? Math.round((Date.now() - activityStartedAt) / 60000)
+              : 0,
+            expectedHRRange: `${60 + activityMeta.hrMod}–${activityMeta.hrMax}`,
+            expectedSpo2Min: activityMeta.spo2Min,
+            note: activityMeta.note,
+          },
         })
       } catch (e) {
         console.warn('[Agent] API call failed, using local fallback:', e.message)
