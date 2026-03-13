@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
+import Prediction from './pages/Prediction'
 
 export default function App() {
   const { pathname } = useLocation()
@@ -20,6 +21,7 @@ export default function App() {
         <Routes>
           <Route path="/"          element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/prediction" element={<Prediction />} />
           <Route path="*"          element={<Home />} />
         </Routes>
       </main>

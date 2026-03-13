@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import vitalsRouter from './routes/vitals.js';
 import agentRouter from './routes/agent.js';
 import authRouter from './routes/auth.js';
+import predictionRouter from './routes/prediction.js';
 
 config();
 
@@ -40,6 +41,7 @@ app.use('/api/', limiter);
 app.use('/api/vitals', vitalsRouter);
 app.use('/api/agent', agentRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/prediction', predictionRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({

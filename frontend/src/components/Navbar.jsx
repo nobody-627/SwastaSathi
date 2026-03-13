@@ -4,8 +4,10 @@ import { Heart, Menu, X } from 'lucide-react'
 import Button from './ui/Button'
 
 const NAV_LINKS = [
+  { label: 'Home',         href: '/'           },
   { label: 'Features',     href: '#features'   },
   { label: 'How It Works', href: '#how-it-works'},
+  { label: 'AI Prediction', href: '/prediction' },
   { label: 'Pricing',      href: '#pricing'     },
 ]
 
@@ -23,8 +25,20 @@ export default function Navbar() {
   const scrollTo = (href) => {
     setOpen(false)
     if (href.startsWith('#')) {
-      const el = document.querySelector(href)
-      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Check if we're on the home page
+      if (window.location.pathname === '/') {
+        const el = document.querySelector(href)
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        // Navigate to home page first, then scroll
+        window.location.href = '/' + href
+      }
+    } else if (href.startsWith('/')) {
+      // Handle navigation to routes
+      window.location.href = href
+    } else if (href === '/') {
+      // Handle home navigation
+      window.location.href = href
     }
   }
 
@@ -34,19 +48,21 @@ export default function Navbar() {
         scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-rose-50' : 'bg-transparent'
       }`}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg flex items-center justify-center shadow-md shadow-rose-200 group-hover:scale-105 transition-transform">
-            <Heart size={16} className="text-white fill-white" />
-          </div>
-          <span className="text-lg font-bold text-gray-900">
-            <span className="font-serif">Swasth</span>Sathi
-          </span>
-        </Link>
+        <div className="flex items-center flex-1">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg flex items-center justify-center shadow-md shadow-rose-200 group-hover:scale-105 transition-transform">
+              <Heart size={16} className="text-white fill-white" />
+            </div>
+            <span className="text-lg font-bold text-gray-900">
+              <span className="font-serif">Swasth</span>Sathi
+            </span>
+          </Link>
+        </div>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop nav - Centered */}
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
           {NAV_LINKS.map(({ label, href }) => (
             <button
               key={label}
@@ -58,11 +74,8 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link to="/dashboard">
-            <Button variant="outline" size="sm">Sign In</Button>
-          </Link>
+        {/* Desktop CTA - Right aligned */}
+        <div className="hidden md:flex items-center gap-3 flex-1 justify-end">
           <Link to="/dashboard">
             <Button size="sm">Open Dashboard</Button>
           </Link>
@@ -90,9 +103,6 @@ export default function Navbar() {
             </button>
           ))}
           <div className="flex gap-2 pt-2 border-t border-gray-100 mt-1">
-            <Link to="/dashboard" className="flex-1" onClick={() => setOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">Sign In</Button>
-            </Link>
             <Link to="/dashboard" className="flex-1" onClick={() => setOpen(false)}>
               <Button size="sm" className="w-full">Dashboard</Button>
             </Link>
