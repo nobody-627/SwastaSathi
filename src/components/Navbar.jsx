@@ -40,7 +40,7 @@ export default function Navbar() {
 
         {/* CTA buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')}
+          <button onClick={() => navigate('/login')}
             className="text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors">
             Sign in
           </button>
@@ -70,6 +70,10 @@ export default function Navbar() {
               {l.label}
             </a>
           ))}
+          <button onClick={() => { navigate('/login'); setOpen(false) }}
+            className="w-full text-left text-sm font-semibold text-rose-600 hover:text-rose-700 py-1.5">
+            Sign in
+          </button>
           <button onClick={() => { navigate('/dashboard'); setOpen(false) }}
             className="btn-primary w-full justify-center text-sm mt-2">
             Get Started

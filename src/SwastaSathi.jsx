@@ -381,39 +381,6 @@ export default function SwastaSathiDashboard() {
     )
   }
 
-  const RiskGauge = () => {
-    const score = agent.riskScore
-    const gColor = gaugeColor(score)
-    const tc = TIER_COLORS[agent.pattern] || TIER_COLORS.NORMAL
-
-    return (
-      <div className="text-center py-2">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">AI Risk Score</p>
-
-        <div className="relative inline-block" style={{ color: gColor }}>
-          <RadialBarChart width={230} height={230}
-            cx={115} cy={115} innerRadius={75} outerRadius={105}
-            data={[{ name: 'bg', value: 10, fill: 'rgba(17,24,39,0.06)' }, { name: 'risk', value: score, fill: gColor }]}
-            startAngle={200} endAngle={-20}>
-            <RadialBar dataKey="value" cornerRadius={6} />
-          </RadialBarChart>
-
-          {/* Center overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-3xl font-black" style={{ color: gColor }}>{score.toFixed(1)}</div>
-            <div className="text-[11px] font-semibold mt-1" style={{ color: tc.text }}>{tc.label}</div>
-            <div className="text-xs text-gray-400 mt-1">{agent.confidence}% confidence</div>
-          </div>
-        </div>
-
-        {/* Confidence bar */}
-        <div className="bg-gray-100 rounded-full h-1 mt-3 mx-6">
-          <div className="h-1 rounded-full transition-[width] duration-500" style={{ width: `${agent.confidence}%`, background: gColor }} />
-        </div>
-      </div>
-    )
-  }
-
   // ─── RENDER ───────────────────────────────────────────────────────────────
 
   const agentStatusColors = {
@@ -489,10 +456,6 @@ export default function SwastaSathiDashboard() {
                   {calibrated ? '✓ Calibrated' : `Calibrating (${readings.length}/20)`}
                 </p>
               </div>
-            </div>
-
-            <div className="card p-5">
-              <RiskGauge />
             </div>
 
             <div className="card p-5">
