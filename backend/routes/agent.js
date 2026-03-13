@@ -4,6 +4,8 @@ config();
 
 const router = Router();
 
+const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
+
 const SYSTEM_PROMPT = `You are SwasthSathi AI — an autonomous clinical escalation agent.
 You analyze real-time patient vital signs and make risk assessments.
 You MUST respond with ONLY a valid JSON object. No preamble, no explanation outside JSON.
@@ -36,8 +38,10 @@ router.post('/analyze', async (req, res) => {
     return res.status(400).json({ error: 'Missing reading data' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey === 'your_anthropic_api_key_here') {
+  const apiKey = process.env.GROQ_API_KEY;
+  const model = process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL;
+
+  if (!apiKey || apiKey === 'your_groq_api_key_here') {
     // Return mock response when no API key is configured
     const mock = buildMockResponse(reading, baseline);
     return res.json(mock);
@@ -52,42 +56,45 @@ Last risk score: ${history?.lastRisk || 0} | Last pattern: ${history?.lastPatter
 Assess and respond with JSON only.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }],
+        model,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0,
+        max_tokens: 600,
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('[Agent] Anthropic API error:', errText);
+      console.error('[Agent] Groq API error:', errText);
       return res.json(buildMockResponse(reading, baseline));
     }
 
     const data = await response.json();
-    const text = data.content.map(b => b.text || '').join('');
+    const text = data?.choices?.[0]?.message?.content || '';
     const clean = text.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
     return res.json(result);
   } catch (err) {
-    console.error('[Agent] Error calling Claude API:', err.message);
+    console.error('[Agent] Error calling Groq API:', err.message);
     return res.json(buildMockResponse(reading, baseline));
   }
 });
 
 // GET /api/agent/status
 router.get('/status', (req, res) => {
-  const hasKey = !!(process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here');
-  res.json({ aiEnabled: hasKey, model: 'claude-sonnet-4-20250514', status: 'ready' });
+  const hasKey = !!(process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your_groq_api_key_here');
+  const model = process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL;
+  res.json({ aiEnabled: hasKey, model, status: 'ready' });
 });
 
 // ── Mock response when no API key ─────────────────────────────
