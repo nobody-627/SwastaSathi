@@ -1,8 +1,84 @@
 import { AlertTriangle, X, Phone, MapPin, Heart } from 'lucide-react'
 import { useAgentStore } from '../../store/agentStore'
+import { useEffect } from 'react'
 
 export default function CriticalOverlay() {
   const { agent, latest, setShowOverlay, emergencyPhone, setEmergencyPhone } = useAgentStore()
+
+  // Play alert sound and voice when overlay appears
+  useEffect(() => {
+    // Play alert sound
+    playAlertSound()
+
+    // Speak the alert message
+    speakAlert(`Critical alert detected. Risk score ${agent.riskScore.toFixed(1)}. ${agent.reasoning}`)
+
+    // Cleanup function to stop any ongoing speech
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [])
+
+  // Function to play alert sound
+  const playAlertSound = () => {
+    try {
+      // Create audio context
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+      // Create oscillator for alert sound
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      // Connect nodes
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      // Configure sound (urgent beep pattern)
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1)
+      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2)
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
+
+      // Play sound
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.5)
+    } catch (error) {
+      console.warn('Could not play alert sound:', error)
+    }
+  }
+
+  // Function to speak alert message
+  const speakAlert = (message) => {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel()
+
+      const utterance = new SpeechSynthesisUtterance(message)
+
+      // Configure voice settings for urgency
+      utterance.rate = 1.2 // Slightly faster
+      utterance.pitch = 1.1 // Slightly higher pitch
+      utterance.volume = 0.8
+
+      // Try to use a female voice if available (often sounds more urgent)
+      const voices = window.speechSynthesis.getVoices()
+      const femaleVoice = voices.find(voice =>
+        voice.name.toLowerCase().includes('female') ||
+        voice.name.toLowerCase().includes('woman') ||
+        voice.name.toLowerCase().includes('samantha') ||
+        voice.name.toLowerCase().includes('victoria')
+      )
+      if (femaleVoice) {
+        utterance.voice = femaleVoice
+      }
+
+      window.speechSynthesis.speak(utterance)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -41,10 +117,10 @@ export default function CriticalOverlay() {
           {/* Current vitals snapshot */}
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[
-              { label: 'HR',   value: `${latest.hr}`,      unit: 'bpm', color: '#f43f5e' },
-              { label: 'SpO2', value: `${latest.spo2}`,    unit: '%',   color: '#3b82f6' },
-              { label: 'Temp', value: `${latest.temp}`,    unit: '°C',  color: '#8b5cf6' },
-              { label: 'HRV',  value: `${latest.hrv}`,     unit: 'ms',  color: '#f59e0b' },
+              { label: 'HR', value: `${latest.hr}`, unit: 'bpm', color: '#f43f5e' },
+              { label: 'SpO2', value: `${latest.spo2}`, unit: '%', color: '#3b82f6' },
+              { label: 'Temp', value: `${latest.temp}`, unit: '°C', color: '#8b5cf6' },
+              { label: 'HRV', value: `${latest.hrv}`, unit: 'ms', color: '#f59e0b' },
             ].map(({ label, value, unit, color }) => (
               <div key={label} className="text-center bg-gray-50 rounded-xl p-2">
                 <div className="text-lg font-bold font-mono" style={{ color }}>{value}</div>
@@ -88,6 +164,28 @@ export default function CriticalOverlay() {
             I'm okay — mark as false alarm
           </button>
         </div>
+      </div>
+
+      {/* Voice control buttons */}
+      <div className="fixed bottom-4 right-4 flex gap-2">
+        <button
+          onClick={() => speakAlert(`Critical alert detected. Risk score ${agent.riskScore.toFixed(1)}. ${agent.reasoning}`)}
+          className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-colors"
+          title="Repeat voice alert"
+        >
+          🔊
+        </button>
+        <button
+          onClick={() => {
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel()
+            }
+          }}
+          className="bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-full shadow-lg transition-colors"
+          title="Stop voice"
+        >
+          🔇
+        </button>
       </div>
     </div>
   )
