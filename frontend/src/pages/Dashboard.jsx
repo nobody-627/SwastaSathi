@@ -3,40 +3,44 @@ import { Heart, Activity, Thermometer, Zap, Home } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAgentStore } from '../store/agentStore'
 import { useAgent, calcTrend } from '../hooks/useAgent'
+import { useAuth } from '../contexts/AuthContext'
 
-import VitalsCard       from '../components/dashboard/VitalsCard'
-import RiskGauge        from '../components/dashboard/RiskGauge'
-import VitalsChart      from '../components/dashboard/VitalsChart'
-import AgentPanel       from '../components/dashboard/AgentPanel'
+import VitalsCard from '../components/dashboard/VitalsCard'
+import RiskGauge from '../components/dashboard/RiskGauge'
+import VitalsChart from '../components/dashboard/VitalsChart'
+import AgentPanel from '../components/dashboard/AgentPanel'
 import ActivitySelector from '../components/dashboard/ActivitySelector'
-import AuditLog         from '../components/dashboard/AuditLog'
-import CriticalOverlay  from '../components/dashboard/CriticalOverlay'
-import DemoControls     from '../components/dashboard/DemoControls'
+import AuditLog from '../components/dashboard/AuditLog'
+import CriticalOverlay from '../components/dashboard/CriticalOverlay'
+import DemoControls from '../components/dashboard/DemoControls'
 import { EscalationPanel, BaselinePanel } from '../components/dashboard/EscalationPanel'
 
 const VITAL_CONFIG = [
-  { key: 'hr',   label: 'Heart Rate',  unit: 'bpm', icon: <Heart   size={16} className="text-rose-500 fill-rose-200" /> },
-  { key: 'spo2', label: 'SpO2',        unit: '%',   icon: <Activity size={16} className="text-blue-500" />              },
-  { key: 'temp', label: 'Temperature', unit: '°C',  icon: <Thermometer size={16} className="text-violet-500" />         },
-  { key: 'hrv',  label: 'HRV',         unit: 'ms',  icon: <Zap      size={16} className="text-amber-500" />             },
+  { key: 'hr', label: 'Heart Rate', unit: 'bpm', icon: <Heart size={16} className="text-rose-500 fill-rose-200" /> },
+  { key: 'spo2', label: 'SpO2', unit: '%', icon: <Activity size={16} className="text-blue-500" /> },
+  { key: 'temp', label: 'Temperature', unit: '°C', icon: <Thermometer size={16} className="text-violet-500" /> },
+  { key: 'hrv', label: 'HRV', unit: 'ms', icon: <Zap size={16} className="text-amber-500" /> },
 ]
 
 const ACTION_BANNER = {
-  YELLOW_ALERT: { bg: 'bg-amber-50 border-amber-200',   text: 'text-amber-700',  msg: '⚠️ Yellow Alert — Mild vital deviation detected. Monitor closely.' },
+  YELLOW_ALERT: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', msg: '⚠️ Yellow Alert — Mild vital deviation detected. Monitor closely.' },
   ORANGE_ALERT: { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-700', msg: '🔶 Orange Alert — Multiple deviations detected. Emergency contact notified.' },
-  RED_ALERT:    { bg: 'bg-rose-50 border-rose-400',     text: 'text-rose-700',   msg: '🚨 RED ALERT — Critical vitals. Emergency services being contacted.' },
+  RED_ALERT: { bg: 'bg-rose-50 border-rose-400', text: 'text-rose-700', msg: '🚨 RED ALERT — Critical vitals. Emergency services being contacted.' },
 }
 
 export default function Dashboard() {
   // Start the agent loop
   useAgent()
 
+  const { user } = useAuth()
+  const displayName = user?.name ? user.name.split(' ')[0] : 'Patient'
+
   const { readings, baseline, latest, agent, showOverlay } = useAgentStore()
   const trends = {
-    hr:   calcTrend(readings, 'hr'),
+    hr: calcTrend(readings, 'hr'),
     spo2: calcTrend(readings, 'spo2'),
     temp: calcTrend(readings, 'temp'),
-    hrv:  calcTrend(readings, 'hrv'),
+    hrv: calcTrend(readings, 'hrv'),
   }
 
   const actionBanner = ACTION_BANNER[agent.action]
@@ -56,7 +60,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
               <span className="text-sm font-bold text-gray-800">
-                Live Monitoring — Ramesh Kumar, 64
+                Live Monitoring — {displayName}
               </span>
             </div>
             <span className="hidden sm:inline text-xs font-semibold bg-rose-50 text-rose-500 border border-rose-200 rounded-full px-2.5 py-0.5">
