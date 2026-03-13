@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply font-sans text-gray-900 bg-white antialiased; }
+  h1,h2,h3 { @apply font-serif; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-rose-500 to-rose-600 text-white font-semibold
+           px-6 py-3 rounded-full shadow-lg shadow-rose-200
+           hover:-translate-y-0.5 hover:shadow-rose-300 hover:shadow-xl
+           active:scale-95 transition-all duration-200;
+  }
+  .btn-outline {
+    @apply border-2 border-rose-400 text-rose-500 font-semibold
+           px-6 py-3 rounded-full bg-transparent
+           hover:bg-rose-50 hover:-translate-y-0.5
+           active:scale-95 transition-all duration-200;
+  }
+  .btn-ghost {
+    @apply text-gray-600 font-medium px-4 py-2 rounded-xl
+           hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150;
+  }
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-rose-50
+           hover:-translate-y-1 hover:shadow-lg hover:shadow-rose-100/50
+           transition-all duration-300;
+  }
+  .vital-card {
+    @apply bg-white rounded-xl p-4 border border-rose-50
+           shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-rose-100/40
+           transition-all duration-200;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 text-xs font-semibold
+           px-3 py-1 rounded-full;
+  }
+  .badge-rose  { @apply badge bg-rose-50 text-rose-600 border border-rose-200; }
+  .badge-green { @apply badge bg-emerald-50 text-emerald-600 border border-emerald-200; }
+  .badge-amber { @apply badge bg-amber-50 text-amber-600 border border-amber-200; }
+  .badge-blue  { @apply badge bg-blue-50 text-blue-600 border border-blue-200; }
+  .badge-orange{ @apply badge bg-orange-50 text-orange-600 border border-orange-200; }
+  .section     { @apply py-16 md:py-24 px-4 sm:px-6; }
+  .container   { @apply max-w-6xl mx-auto; }
+  .gradient-text {
+    @apply bg-gradient-to-r from-rose-500 to-rose-700
+           bg-clip-text text-transparent;
+  }
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/80 rounded-2xl shadow-lg;
+  }
+  .sidebar-section {
+    @apply bg-white rounded-xl p-4 border border-gray-100 shadow-sm;
+  }
+  .log-entry {
+    @apply border-l-2 px-3 py-2 mb-1.5 rounded-r-lg text-xs
+           animate-slide-in transition-all;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-rose-200 rounded-full; }
+  .text-shadow { text-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .hero-gradient { background: radial-gradient(ellipse at top right, #fff5f7 0%, #ffffff 50%, #fdf2f8 100%); }
+}

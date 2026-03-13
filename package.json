@@ -1,25 +1,12 @@
 {
-  "name": "swastasathi",
-  "private": true,
+  "name": "swasthsathi",
   "version": "1.0.0",
-  "type": "module",
+  "description": "SwasthSathi — AI Health Monitoring System",
+  "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "recharts": "^2.12.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.8",
-    "react-router-dom": "^7.13.1",
-    "tailwindcss": "^4.2.1",
-    "vite": "^5.2.0"
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build"
   }
 }
