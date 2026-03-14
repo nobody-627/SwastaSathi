@@ -10,7 +10,7 @@ import vitalsRouter from './routes/vitals.js';
 import agentRouter from './routes/agent.js';
 import authRouter from './routes/auth.js';
 import predictionRouter from './routes/prediction.js';
-import emergencyRouter from './routes/emerggency.js';
+import emergencyRouter from './routes/emergency.js';
 
 config();
 
@@ -43,6 +43,7 @@ app.use('/api/vitals', vitalsRouter);
 app.use('/api/agent', agentRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/prediction', predictionRouter);
+app.use('/api/emergency', emergencyRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({
@@ -152,8 +153,6 @@ app.use((err, req, res, next) => {
   console.error('[Error]', err);
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
-
-app.use('/api/emergency', emergencyRouter);
 
 // ── Start ─────────────────────────────────────────────────────
 httpServer.listen(PORT, () => {

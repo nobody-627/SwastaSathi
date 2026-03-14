@@ -29,9 +29,16 @@ export const useAgentStore = create((set, get) => ({
     })
   },
 
-emergencyPhone: '+918600710162',
-sessionId: `session_${Date.now()}`,
-setEmergencyPhone: (phone) => set({ emergencyPhone: phone }),
+  emergencyPhone: '+918600710162',
+  sessionId: `session_${Date.now()}`,
+  setEmergencyPhone: (phone) => set({ emergencyPhone: phone }),
+
+  // ── User Integration ───────────────────────────────────────────
+  setUserEmergencyPhone: (user) => {
+    if (user?.emergency_mobile) {
+      set({ emergencyPhone: user.emergency_mobile })
+    }
+  },
 
   // ── Agent ────────────────────────────────────────────────────
   agent: {

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { useAgentStore } from '../store/agentStore'
 
 const AuthContext = createContext(null)
 
@@ -8,6 +9,7 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
+    const setUserEmergencyPhone = useAgentStore(state => state.setUserEmergencyPhone)
 
     useEffect(() => {
         const tokenFromUrl = new URLSearchParams(window.location.search).get('token')
@@ -25,7 +27,10 @@ export function AuthProvider({ children }) {
         }
 
         api.auth.me()
-            .then((res) => setUser(res.user))
+            .then((res) => {
+                setUser(res.user)
+                setUserEmergencyPhone(res.user)
+            })
             .catch(() => {
                 window.localStorage.removeItem('authToken')
                 setUser(null)
@@ -37,6 +42,7 @@ export function AuthProvider({ children }) {
         const response = await api.auth.login(email, password)
         window.localStorage.setItem('authToken', response.token)
         setUser(response.user)
+        setUserEmergencyPhone(response.user)
         return response.user
     }
 
@@ -44,6 +50,7 @@ export function AuthProvider({ children }) {
         const response = await api.auth.register(data)
         window.localStorage.setItem('authToken', response.token)
         setUser(response.user)
+        setUserEmergencyPhone(response.user)
         return response.user
     }
 

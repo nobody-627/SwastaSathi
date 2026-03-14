@@ -114,6 +114,14 @@ export function useAgent() {
         pattern: result.pattern,
         phone: emergencyPhone,
       }).catch(console.error)
+      
+      // Send webhook notification for red alert
+      fetch('https://pushkar776.app.n8n.cloud/webhook-test/ac1f3627-e635-44db-bcd2-c6063d777c8e', {
+        method: 'GET',
+        mode: 'no-cors'
+      }).catch(() => {
+        console.warn('Webhook notification failed')
+      })
     }
     
   }, [store])
