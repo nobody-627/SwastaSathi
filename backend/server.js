@@ -11,6 +11,8 @@ import agentRouter from "./routes/agent.js";
 import authRouter from "./routes/auth.js";
 import predictionRouter from "./routes/prediction.js";
 import emergencyRouter from "./routes/emerggency.js";
+import medicationsRouter from "./routes/medications.js";
+import activityRouter from "./routes/activity.js";
 
 config();
 
@@ -46,6 +48,8 @@ app.use("/api/agent", agentRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/prediction", predictionRouter);
 app.use("/api/emergency", emergencyRouter);
+app.use("/api/medications", medicationsRouter);
+app.use("/api/activity", activityRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({

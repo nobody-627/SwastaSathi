@@ -3,6 +3,11 @@ import axios from 'axios'
 
 // ── Fast2SMS (India) ──────────────────────────────────────────
 export async function sendFast2SMS(phone, message) {
+  if (!process.env.FAST2SMS_API_KEY) throw new Error('Fast2SMS API key not configured')
+
+  const numbers = Array.isArray(phone) ? phone : [phone]
+  const cleaned = numbers.map(p => String(p).replace(/\D/g, '')).join(',')
+
   const response = await axios.post(
     'https://www.fast2sms.com/dev/bulkV2',
     {
@@ -10,7 +15,7 @@ export async function sendFast2SMS(phone, message) {
       message,
       language: 'english',
       flash: 0,
-      numbers: phone,
+      numbers: cleaned,
     },
     {
       headers: {
@@ -24,17 +29,19 @@ export async function sendFast2SMS(phone, message) {
 
 // ── Twilio (Global) ───────────────────────────────────────────
 export async function sendTwilioSMS(phone, message) {
-  const { default: twilio } = await import('twilio')
-  const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-  )
-  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_FROM_NUMBER) {
+  const sid   = process.env.TWILIO_ACCOUNT_SID?.trim()
+  const token = process.env.TWILIO_AUTH_TOKEN?.trim()
+  const from  = process.env.TWILIO_FROM_NUMBER?.trim()
+
+  if (!sid || !token || !from) {
     throw new Error('Twilio credentials not configured')
   }
+
+  const { default: twilio } = await import('twilio')
+  const client = twilio(sid, token)
   return client.messages.create({
     body: message,
-    from: process.env.TWILIO_FROM_NUMBER,
+    from,
     to: phone,
   })
 }
@@ -57,12 +64,10 @@ export async function sendEmergencySMS(phone, vitals, location, riskScore, patte
     `Please send help immediately or call an ambulance:\n` +
     `🚑 Dial 108 (National Ambulance)`
 
-  if (process.env.FAST2SMS_API_KEY) {
-    return sendFast2SMS(phone, message)
-  } else if (process.env.TWILIO_ACCOUNT_SID) {
-    return sendTwilioSMS(phone, message)
-  } else {
-    console.log('[SMS] No provider configured. Would have sent:\n', message)
-    return { mock: true, message }
-  }
+  // Use Twilio first (requested); optional Fast2SMS fallback if Twilio is missing
+  if (process.env.TWILIO_ACCOUNT_SID) return sendTwilioSMS(phone, message)
+  if (process.env.FAST2SMS_API_KEY) return sendFast2SMS(phone, message)
+
+  console.log('[SMS] No provider configured. Would have sent:\n', message)
+  return { mock: true, message }
 }

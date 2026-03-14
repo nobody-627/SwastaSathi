@@ -14,6 +14,9 @@ import AuditLog from '../components/dashboard/AuditLog'
 import CriticalOverlay from '../components/dashboard/CriticalOverlay'
 import DemoControls from '../components/dashboard/DemoControls'
 import { EscalationPanel, BaselinePanel } from '../components/dashboard/EscalationPanel'
+import ReminderBanner from '../components/medications/ReminderBanner'
+import TodaySchedule from '../components/medications/TodaySchedule'
+import ActivityWidget from '../components/dashboard/ActivityWidget'
 
 const VITAL_CONFIG = [
   { key: 'hr', label: 'Heart Rate', unit: 'bpm', icon: <Heart size={16} className="text-rose-500 fill-rose-200" /> },
@@ -148,6 +151,9 @@ export default function Dashboard() {
       {/* Critical overlay */}
       {showOverlay && <CriticalOverlay />}
 
+      {/* Medication reminders */}
+      <ReminderBanner />
+
       {/* ── Top bar ─────────────────────────────────────────── */}
       <div className="bg-white border-b border-rose-50 px-4 sm:px-6 py-3 sticky top-16 z-30">
         <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4 flex-wrap">
@@ -235,6 +241,9 @@ export default function Dashboard() {
             <div className="xl:hidden">
               <EscalationPanel />
             </div>
+
+            {/* Activity widget at bottom */}
+            <ActivityWidget />
           </div>
 
           {/* ── RIGHT SIDEBAR ─────────────────────────────────── */}
@@ -242,6 +251,7 @@ export default function Dashboard() {
             <div className="hidden xl:block">
               <EscalationPanel />
             </div>
+            <TodaySchedule />
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1">
               <AuditLog />
             </div>

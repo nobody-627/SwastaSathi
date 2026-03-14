@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Prediction from './pages/Prediction'
+import Medications from './pages/Medications'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
@@ -43,6 +44,15 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/prediction" element={<Prediction />} />
+            <Route
+              path="/medications"
+              element={
+                <RequireAuth>
+                  <Medications />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/dashboard"
               element={
