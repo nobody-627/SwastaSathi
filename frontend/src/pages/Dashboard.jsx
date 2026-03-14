@@ -14,6 +14,9 @@ import AuditLog from '../components/dashboard/AuditLog'
 import CriticalOverlay from '../components/dashboard/CriticalOverlay'
 import DemoControls from '../components/dashboard/DemoControls'
 import { EscalationPanel, BaselinePanel } from '../components/dashboard/EscalationPanel'
+import ReminderBanner from '../components/medications/ReminderBanner'
+import TodaySchedule from '../components/medications/TodaySchedule'
+import ActivityWidget from '../components/dashboard/ActivityWidget'
 
 const VITAL_CONFIG = [
   { key: 'hr', label: 'Heart Rate', unit: 'bpm', icon: <Heart size={16} className="text-rose-500 fill-rose-200" /> },
@@ -26,6 +29,76 @@ const ACTION_BANNER = {
   YELLOW_ALERT: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', msg: '⚠️ Yellow Alert — Mild vital deviation detected. Monitor closely.' },
   ORANGE_ALERT: { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-700', msg: '🔶 Orange Alert — Multiple deviations detected. Emergency contact notified.' },
   RED_ALERT: { bg: 'bg-rose-50 border-rose-400', text: 'text-rose-700', msg: '🚨 RED ALERT — Critical vitals. Emergency services being contacted.' },
+}
+
+// Sound and voice functions
+const playAlertSound = (alertType) => {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    const oscillator = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+
+    // Different sounds for different alert levels
+    let frequency, duration
+    switch (alertType) {
+      case 'YELLOW_ALERT':
+        frequency = 600
+        duration = 0.3
+        break
+      case 'ORANGE_ALERT':
+        frequency = 800
+        duration = 0.4
+        break
+      case 'RED_ALERT':
+        frequency = 1000
+        duration = 0.5
+        break
+      default:
+        return
+    }
+
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration)
+
+    oscillator.start(audioContext.currentTime)
+    oscillator.stop(audioContext.currentTime + duration)
+  } catch (error) {
+    console.warn('Could not play alert sound:', error)
+  }
+}
+
+const speakAlert = (message, urgency = 'normal') => {
+  if ('speechSynthesis' in window) {
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(message)
+
+    // Configure voice settings based on urgency
+    switch (urgency) {
+      case 'low':
+        utterance.rate = 1.0
+        utterance.pitch = 1.0
+        utterance.volume = 0.6
+        break
+      case 'medium':
+        utterance.rate = 1.1
+        utterance.pitch = 1.05
+        utterance.volume = 0.7
+        break
+      case 'high':
+        utterance.rate = 1.2
+        utterance.pitch = 1.1
+        utterance.volume = 0.8
+        break
+    }
+
+    window.speechSynthesis.speak(utterance)
+  }
 }
 
 export default function Dashboard() {
@@ -45,11 +118,41 @@ export default function Dashboard() {
 
   const actionBanner = ACTION_BANNER[agent.action]
 
+  // Play sound and voice when alerts change
+  useEffect(() => {
+    if (actionBanner) {
+      const alertType = agent.action
+      let urgency = 'normal'
+      let message = ''
+
+      switch (alertType) {
+        case 'YELLOW_ALERT':
+          urgency = 'low'
+          message = 'Yellow alert. Mild vital deviation detected. Monitor closely.'
+          break
+        case 'ORANGE_ALERT':
+          urgency = 'medium'
+          message = 'Orange alert. Multiple deviations detected. Emergency contact notified.'
+          break
+        case 'RED_ALERT':
+          urgency = 'high'
+          message = 'Red alert. Critical vitals detected. Emergency services being contacted.'
+          break
+      }
+
+      playAlertSound(alertType)
+      speakAlert(message, urgency)
+    }
+  }, [agent.action, actionBanner])
+
   return (
     <div className="min-h-screen bg-gray-50">
 
       {/* Critical overlay */}
       {showOverlay && <CriticalOverlay />}
+
+      {/* Medication reminders */}
+      <ReminderBanner />
 
       {/* ── Top bar ─────────────────────────────────────────── */}
       <div className="bg-white border-b border-rose-50 px-4 sm:px-6 py-3 sticky top-16 z-30">
@@ -138,6 +241,9 @@ export default function Dashboard() {
             <div className="xl:hidden">
               <EscalationPanel />
             </div>
+
+            {/* Activity widget at bottom */}
+            <ActivityWidget />
           </div>
 
           {/* ── RIGHT SIDEBAR ─────────────────────────────────── */}
@@ -145,6 +251,7 @@ export default function Dashboard() {
             <div className="hidden xl:block">
               <EscalationPanel />
             </div>
+            <TodaySchedule />
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex-1">
               <AuditLog />
             </div>

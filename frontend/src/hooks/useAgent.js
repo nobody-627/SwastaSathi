@@ -206,21 +206,23 @@ export function useAgent() {
 
       // 7. Add audit log entry
       const tier = result.risk_score >= 8 ? 'critical' : result.risk_score >= 6 ? 'orange' : result.risk_score >= 4 ? 'warn' : 'normal'
-      const entry = {
-        id:        Date.now(),
-        timestamp: new Date().toLocaleTimeString(),
-        reading:   { ...reading },
-        riskScore: result.risk_score,
-        pattern:   result.pattern,
-        confidence:result.confidence,
-        action:    result.action,
-        reasoning: result.reasoning,
-        tier,
-      }
-      store.addLogEntry(entry)
+      if (tier !== 'normal') {
+        const entry = {
+          id:        Date.now(),
+          timestamp: new Date().toLocaleTimeString(),
+          reading:   { ...reading },
+          riskScore: result.risk_score,
+          pattern:   result.pattern,
+          confidence:result.confidence,
+          action:    result.action,
+          reasoning: result.reasoning,
+          tier,
+        }
+        store.addLogEntry(entry)
 
-      // 8. Persist to backend (fire-and-forget)
-      api.vitals.log(entry, sessionId.current).catch(() => {})
+        // 8. Persist to backend (fire-and-forget)
+        api.vitals.log(entry, sessionId.current).catch(() => {})
+      }
 
     }, 3000)
 
