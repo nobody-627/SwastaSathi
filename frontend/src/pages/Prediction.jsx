@@ -176,9 +176,11 @@ const Prediction = () => {
           <div className="text-center mb-8">
             <div className="flex justify-center items-center mb-4">
               <Brain className="h-12 w-12 text-rose-500 mr-3" />
-              <h1 className="text-4xl font-bold text-gray-800">AI Disease Prediction</h1>
+              <h1 className="text-4xl font-bold text-gray-800">Urinary Inflammation Prediction</h1>
             </div>
-            <p className="text-gray-600 text-lg">Enter your health data and symptoms to get AI-powered disease predictions</p>
+            <p className="text-gray-600 text-lg">
+              Enter temperature and relevant symptoms to estimate risk for bladder inflammation and renal pelvis nephritis.
+            </p>
           </div>
         </div>
       </div>

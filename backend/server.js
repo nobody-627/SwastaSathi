@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import { createServer } from 'http';
-import { WebSocketServer } from 'ws';
-import { config } from 'dotenv';
-import rateLimit from 'express-rate-limit';
-import vitalsRouter from './routes/vitals.js';
-import agentRouter from './routes/agent.js';
-import authRouter from './routes/auth.js';
-import predictionRouter from './routes/prediction.js';
-import emergencyRouter from './routes/emergency.js';
-=======
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -25,10 +10,9 @@ import vitalsRouter from "./routes/vitals.js";
 import agentRouter from "./routes/agent.js";
 import authRouter from "./routes/auth.js";
 import predictionRouter from "./routes/prediction.js";
-import emergencyRouter from "./routes/emerggency.js";
+import emergencyRouter from "./routes/emergency.js";
 import medicationsRouter from "./routes/medications.js";
 import activityRouter from "./routes/activity.js";
->>>>>>> 7cf9104ff3eb9e5033a089f0631d487fa4e22eb1
 
 config();
 
@@ -59,13 +43,6 @@ const limiter = rateLimit({
 app.use("/api/", limiter);
 
 // ── Routes ────────────────────────────────────────────────────
-<<<<<<< HEAD
-app.use('/api/vitals', vitalsRouter);
-app.use('/api/agent', agentRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/prediction', predictionRouter);
-app.use('/api/emergency', emergencyRouter);
-=======
 app.use("/api/vitals", vitalsRouter);
 app.use("/api/agent", agentRouter);
 app.use("/api/auth", authRouter);
@@ -73,7 +50,6 @@ app.use("/api/prediction", predictionRouter);
 app.use("/api/emergency", emergencyRouter);
 app.use("/api/medications", medicationsRouter);
 app.use("/api/activity", activityRouter);
->>>>>>> 7cf9104ff3eb9e5033a089f0631d487fa4e22eb1
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -211,11 +187,6 @@ app.use((err, req, res, next) => {
     .json({ error: err.message || "Internal server error" });
 });
 
-<<<<<<< HEAD
-=======
-app.use("/api/emergency", emergencyRouter);
-
->>>>>>> 7cf9104ff3eb9e5033a089f0631d487fa4e22eb1
 // ── Start ─────────────────────────────────────────────────────
 httpServer.listen(PORT, () => {
   console.log(`\n🚀 SwasthSathi API running on http://localhost:${PORT}`);

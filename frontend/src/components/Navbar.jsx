@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Heart, Menu, X, User } from 'lucide-react'
+import { Heart, Menu, X, User, LayoutDashboard, Brain, Pill, Home } from 'lucide-react'
 import Button from './ui/Button'
 import { useAuth } from '../contexts/AuthContext'
 
 const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Features', href: '#features' },
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'AI Prediction', href: '/prediction' },
-  { label: 'Medications', href: '/medications' },
-  { label: 'Pricing', href: '#pricing' },
+  { label: 'Home', href: '/', icon: Home },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'AI Prediction', href: '/prediction', icon: Brain },
+  { label: 'Medications', href: '/medications', icon: Pill },
 ]
 
 export default function Navbar() {
@@ -43,29 +41,22 @@ export default function Navbar() {
   const scrollTo = (href) => {
     setOpen(false)
     if (href.startsWith('#')) {
-      // Check if we're on the home page
-      if (window.location.pathname === '/') {
-        const el = document.querySelector(href)
-        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      } else {
-        // Navigate to home page first, then scroll
-        window.location.href = '/' + href
-      }
+      const el = document.querySelector(href)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else if (href.startsWith('/')) {
-      // Handle navigation to routes
-      window.location.href = href
-    } else if (href === '/') {
-      // Handle home navigation
-      window.location.href = href
+      navigate(href)
     }
   }
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-rose-50' : 'bg-transparent'
-        }`}
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+        scrolled 
+          ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-rose-100/50' 
+          : 'bg-white/60 backdrop-blur-md border-b border-rose-50/30'
+      }`}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center">
         {/* Logo */}
         <div className="flex items-center flex-1">
           <Link to="/" className="flex items-center gap-2 group">
@@ -80,12 +71,13 @@ export default function Navbar() {
 
         {/* Desktop nav - Centered */}
         <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ label, href, icon: Icon }) => (
             <button
               key={label}
               onClick={() => scrollTo(href)}
               className="text-sm font-medium text-gray-500 hover:text-rose-500 px-3 py-2 rounded-lg hover:bg-rose-50 transition-colors"
             >
+              <Icon size={16} className="mr-2" />
               {label}
             </button>
           ))}
@@ -161,12 +153,13 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-white border-t border-rose-50 px-4 py-4 flex flex-col gap-2 shadow-lg">
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ label, href, icon: Icon }) => (
             <button
               key={label}
               onClick={() => scrollTo(href)}
               className="text-left text-sm font-medium text-gray-600 hover:text-rose-500 py-2 px-3 rounded-lg hover:bg-rose-50 transition-colors"
             >
+              <Icon size={16} className="mr-2" />
               {label}
             </button>
           ))}
@@ -174,12 +167,12 @@ export default function Navbar() {
           <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-1">
             {user ? (
               <>
-                <Link to="/dashboard" className="w-full" onClick={() => setOpen(false)}>
+                <Link to="/dashboard" className="w-full">
                   <Button size="sm" className="w-full">
                     Dashboard
                   </Button>
                 </Link>
-                <Link to="/profile" className="w-full" onClick={() => setOpen(false)}>
+                <Link to="/profile" className="w-full">
                   <Button size="sm" variant="outline" className="w-full">
                     Profile
                   </Button>
@@ -198,12 +191,12 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/login" className="w-full" onClick={() => setOpen(false)}>
+                <Link to="/login" className="w-full">
                   <Button size="sm" className="w-full">
                     Sign in
                   </Button>
                 </Link>
-                <Link to="/register" className="w-full" onClick={() => setOpen(false)}>
+                <Link to="/register" className="w-full">
                   <Button size="sm" variant="outline" className="w-full">
                     Create account
                   </Button>

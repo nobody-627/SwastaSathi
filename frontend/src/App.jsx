@@ -14,8 +14,11 @@ function RequireAuth({ children }) {
   const { user, loading } = useAuth()
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="text-gray-500">Checking authentication…</span>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-gray-500">Loading...</div>
+        </div>
       </div>
     )
   }
@@ -43,24 +46,22 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            } />
             <Route path="/prediction" element={<Prediction />} />
-            <Route
-              path="/medications"
-              element={
-                <RequireAuth>
-                  <Medications />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <RequireAuth>
-                  <Dashboard />
-                </RequireAuth>
-              }
-            />
+            <Route path="/medications" element={
+              <RequireAuth>
+                <Medications />
+              </RequireAuth>
+            } />
+            <Route path="/dashboard" element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            } />
             <Route path="*" element={<Home />} />
           </Routes>
         </main>

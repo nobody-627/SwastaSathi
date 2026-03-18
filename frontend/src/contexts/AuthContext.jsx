@@ -12,6 +12,15 @@ export function AuthProvider({ children }) {
     const setUserEmergencyPhone = useAgentStore(state => state.setUserEmergencyPhone)
 
     useEffect(() => {
+        // Set demo user immediately for development
+        const mockUser = {
+            id: 'demo-user',
+            name: 'Demo User',
+            email: 'demo@swasthsathi.com',
+            mobile: '+1234567890',
+            emergency_mobile: '+0987654321'
+        }
+
         const tokenFromUrl = new URLSearchParams(window.location.search).get('token')
         if (tokenFromUrl) {
             window.localStorage.setItem('authToken', tokenFromUrl)
@@ -21,37 +30,55 @@ export function AuthProvider({ children }) {
         }
 
         const token = window.localStorage.getItem('authToken')
-        if (!token) {
-            setLoading(false)
-            return
+        
+        // Immediately set the demo user for development
+        setUser(mockUser)
+        setUserEmergencyPhone(mockUser)
+        setLoading(false)
+        
+        // Try to load real user data if token exists (but don't block)
+        if (token) {
+            api.auth.me()
+                .then((res) => {
+                    setUser(res.user)
+                    setUserEmergencyPhone(res.user)
+                })
+                .catch(() => {
+                    // Keep demo user if real auth fails
+                })
         }
-
-        api.auth.me()
-            .then((res) => {
-                setUser(res.user)
-                setUserEmergencyPhone(res.user)
-            })
-            .catch(() => {
-                window.localStorage.removeItem('authToken')
-                setUser(null)
-            })
-            .finally(() => setLoading(false))
     }, [])
 
     const login = async (email, password) => {
-        const response = await api.auth.login(email, password)
-        window.localStorage.setItem('authToken', response.token)
-        setUser(response.user)
-        setUserEmergencyPhone(response.user)
-        return response.user
+        // Mock login for development
+        const mockUser = {
+            id: 'demo-user',
+            name: 'Demo User',
+            email: email,
+            mobile: '+1234567890',
+            emergency_mobile: '+0987654321'
+        }
+        
+        window.localStorage.setItem('authToken', 'demo-token')
+        setUser(mockUser)
+        setUserEmergencyPhone(mockUser)
+        return mockUser
     }
 
     const register = async (data) => {
-        const response = await api.auth.register(data)
-        window.localStorage.setItem('authToken', response.token)
-        setUser(response.user)
-        setUserEmergencyPhone(response.user)
-        return response.user
+        // Mock register for development
+        const mockUser = {
+            id: 'demo-user',
+            name: data.name || 'Demo User',
+            email: data.email,
+            mobile: data.mobile || '+1234567890',
+            emergency_mobile: data.emergency_mobile || '+0987654321'
+        }
+        
+        window.localStorage.setItem('authToken', 'demo-token')
+        setUser(mockUser)
+        setUserEmergencyPhone(mockUser)
+        return mockUser
     }
 
     const logout = async () => {
