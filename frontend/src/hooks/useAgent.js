@@ -196,6 +196,8 @@ export function useAgent() {
         action:     result.action,
         lastCallMs: Date.now(),
         isMock:     result.mock || false,
+        provider: result.provider || (result.mock ? 'fallback' : 'groq'),
+        fallbackReason: result.fallbackReason || null,
       })
 
       // 5. Stream reasoning text
@@ -224,7 +226,7 @@ export function useAgent() {
         api.vitals.log(entry, sessionId.current).catch(() => {})
       }
 
-    }, 3000)
+    }, 12000)
 
     return () => clearInterval(iv)
   }, [store.isRunning, store.anomalyMode, streamText, handleEscalation])

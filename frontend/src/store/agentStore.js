@@ -52,6 +52,8 @@ export const useAgentStore = create((set, get) => ({
     action:     'NONE',
     lastCallMs: 0,
     isMock:     false,
+    provider:   'groq',
+    fallbackReason: null,
   },
 
   setAgent(patch) {

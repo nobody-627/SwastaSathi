@@ -47,6 +47,24 @@ export function AuthProvider({ children }) {
                     // Keep demo user if real auth fails
                 })
         }
+<<<<<<< HEAD
+=======
+
+        api.auth.me()
+            .then((res) => {
+                setUser(res.user)
+                setUserEmergencyPhone(res.user)
+            })
+            .catch((err) => {
+                // Only clear token when backend confirms token is invalid.
+                // Network/transient failures should not force logout.
+                if (err?.status === 401 || err?.status === 403) {
+                    window.localStorage.removeItem('authToken')
+                    setUser(null)
+                }
+            })
+            .finally(() => setLoading(false))
+>>>>>>> 70823d0 (Bug fixing)
     }, [])
 
     const login = async (email, password) => {

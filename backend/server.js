@@ -13,6 +13,12 @@ import predictionRouter from "./routes/prediction.js";
 import emergencyRouter from "./routes/emergency.js";
 import medicationsRouter from "./routes/medications.js";
 import activityRouter from "./routes/activity.js";
+<<<<<<< HEAD
+=======
+import mlPredictionRouter from "./routes/mlPrediction.js";
+import predictionEngine from "./ml/predictionEngine.js";
+import healthDataStore from "./services/healthDataStore.js";
+>>>>>>> 70823d0 (Bug fixing)
 
 config();
 
@@ -50,6 +56,10 @@ app.use("/api/prediction", predictionRouter);
 app.use("/api/emergency", emergencyRouter);
 app.use("/api/medications", medicationsRouter);
 app.use("/api/activity", activityRouter);
+<<<<<<< HEAD
+=======
+app.use("/api/ml", mlPredictionRouter);
+>>>>>>> 70823d0 (Bug fixing)
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -149,6 +159,46 @@ wss.on("connection", (ws, req) => {
         readingCount: state.readings.length,
       }),
     );
+
+    // Feed ML datastore from live stream
+    healthDataStore
+      .getActiveMedications()
+      .then((medications) =>
+        healthDataStore.getUserProfile().then((profile) => {
+          const [systolic, diastolic] = (reading.bp || "120/80")
+            .split("/")
+            .map((v) => Number(v) || 0);
+
+          healthDataStore.addRecord({
+            userId: "default_user",
+            timestamp: new Date(reading.timestamp).toISOString(),
+            source: "simulated",
+            vitals: {
+              heartRate: reading.hr,
+              hrv: reading.hrv,
+              spo2: reading.spo2,
+              bloodPressure: {
+                systolic: systolic || 120,
+                diastolic: diastolic || 80,
+              },
+              bloodSugar: 95,
+              bodyTemperature: reading.temp,
+              respiratoryRate: 16,
+            },
+            activity: {
+              type: state.mode || "resting",
+              steps: state.readings.length * 3,
+              caloriesBurned: state.readings.length * 0.4,
+              activeMinutes: Math.round(state.readings.length * 3 / 60),
+              stressLevel: Math.max(10, Math.min(90, 50 + (reading.hr - 72))),
+              sleepScore: 72,
+            },
+            medications,
+            profile,
+          });
+        }),
+      )
+      .catch((err) => console.warn("[ML] Data store ingestion warning:", err.message));
   }, 3000);
 
   ws.on("message", (raw) => {
@@ -192,6 +242,33 @@ httpServer.listen(PORT, () => {
   console.log(`\n🚀 SwasthSathi API running on http://localhost:${PORT}`);
   console.log(`🔌 WebSocket available at ws://localhost:${PORT}/ws/vitals`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}\n`);
+  console.log("[ML] Prediction engine initialized");
+  console.log("[ML] Minimum records needed:", predictionEngine.minRecordsRequired);
 });
+
+setInterval(async () => {
+  try {
+    const records = healthDataStore.getRecords(60);
+    const profile = await healthDataStore.getUserProfile();
+    if (records.length >= predictionEngine.minRecordsRequired) {
+      const result = await predictionEngine.predict(records, profile);
+      if (result?.predictions && result.predictions.length > 0) {
+        const payload = JSON.stringify({
+          type: "ml:prediction",
+          result,
+          timestamp: new Date().toISOString(),
+        });
+
+        for (const client of wss.clients) {
+          if (client.readyState === client.OPEN) {
+            client.send(payload);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[ML] Prediction error:", err.message);
+  }
+}, 15000);
 
 export default app;

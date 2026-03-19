@@ -62,7 +62,7 @@ router.post('/analyze', async (req, res) => {
 
   if (!apiKey || apiKey === 'your_groq_api_key_here') {
     // Return mock response when no API key is configured
-    const mock = buildMockResponse(reading, baseline);
+    const mock = buildMockResponse(reading, baseline, 'missing_api_key');
     return res.json(mock);
   }
 
@@ -89,17 +89,17 @@ router.post('/analyze', async (req, res) => {
     if (!response.ok) {
       const errText = await response.text();
       console.error('[Agent] Groq API error:', errText);
-      return res.json(buildMockResponse(reading, baseline));
+      return res.json(buildMockResponse(reading, baseline, 'groq_api_error'));
     }
 
     const data = await response.json();
     const text = data?.choices?.[0]?.message?.content || '';
     const clean = text.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
-    return res.json(result);
+    return res.json({ ...result, mock: false, provider: 'groq' });
   } catch (err) {
     console.error('[Agent] Error calling Groq API:', err.message);
-    return res.json(buildMockResponse(reading, baseline));
+    return res.json(buildMockResponse(reading, baseline, 'groq_exception'));
   }
 });
 
@@ -111,7 +111,7 @@ router.get('/status', (req, res) => {
 });
 
 // ── Mock response when no API key ─────────────────────────────
-function buildMockResponse(reading, baseline) {
+function buildMockResponse(reading, baseline, reason = 'mock_fallback') {
   const b = baseline || { hr: 72, spo2: 97, temp: 36.6, hrv: 45 };
   const hrDev = reading.hr - b.hr;
   const spo2Dev = reading.spo2 - b.spo2;
@@ -152,6 +152,8 @@ function buildMockResponse(reading, baseline) {
     reasoning,
     weights: { hr: 0.30, spo2: 0.35, temp: 0.15, hrv: 0.20 },
     mock: true,
+    provider: 'fallback',
+    fallbackReason: reason,
   };
 }
 

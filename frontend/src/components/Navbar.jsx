@@ -5,10 +5,18 @@ import Button from './ui/Button'
 import { useAuth } from '../contexts/AuthContext'
 
 const NAV_LINKS = [
+<<<<<<< HEAD
   { label: 'Home', href: '/', icon: Home },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'AI Prediction', href: '/prediction', icon: Brain },
   { label: 'Medications', href: '/medications', icon: Pill },
+=======
+  { label: 'Home', href: '/' },
+  { label: 'Features', href: '#features' },
+  { label: 'AI Prediction', href: '/prediction' },
+  { label: 'Medications', href: '/medications' },
+  { label: 'Pricing', href: '#pricing' },
+>>>>>>> 70823d0 (Bug fixing)
 ]
 
 export default function Navbar() {
@@ -41,10 +49,31 @@ export default function Navbar() {
   const scrollTo = (href) => {
     setOpen(false)
     if (href.startsWith('#')) {
+<<<<<<< HEAD
       const el = document.querySelector(href)
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else if (href.startsWith('/')) {
       navigate(href)
+=======
+      // Check if we're on the home page
+      if (window.location.pathname === '/') {
+        const el = document.querySelector(href)
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        // Navigate to home route without full reload, then scroll.
+        navigate('/')
+        setTimeout(() => {
+          const el = document.querySelector(href)
+          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 50)
+      }
+    } else if (href.startsWith('/')) {
+      // Handle navigation to routes
+      navigate(href)
+    } else if (href === '/') {
+      // Handle home navigation
+      navigate('/')
+>>>>>>> 70823d0 (Bug fixing)
     }
   }
 

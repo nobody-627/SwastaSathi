@@ -37,7 +37,9 @@ export default function AgentPanel() {
             { l: 'Pattern',    v: agent.pattern    },
             { l: 'Confidence', v: `${agent.confidence}%` },
             { l: 'Cycle',      v: `#${agent.cycle}`},
-            { l: 'Mode',       v: agent.isMock ? 'Local AI' : 'Claude API' },
+            { l: 'Mode',       v: agent.isMock ? 'Local Fallback' : 'Groq API' },
+            { l: 'Provider',   v: agent.provider || (agent.isMock ? 'fallback' : 'groq') },
+            ...(agent.isMock && agent.fallbackReason ? [{ l: 'Fallback', v: agent.fallbackReason }] : []),
           ].map(({ l, v }) => (
             <div key={l} className="flex justify-between items-center text-xs py-1.5 border-b border-gray-50 last:border-0">
               <span className="text-gray-400">{l}</span>

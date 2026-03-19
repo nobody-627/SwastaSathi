@@ -9,6 +9,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import useMLPrediction from './hooks/useMLPrediction'
+import PredictionBanner from './components/ml/PredictionBanner'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth()
@@ -30,6 +32,7 @@ function RequireAuth({ children }) {
 
 export default function App() {
   const { pathname } = useLocation()
+  useMLPrediction()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -65,6 +68,7 @@ export default function App() {
             <Route path="*" element={<Home />} />
           </Routes>
         </main>
+        <PredictionBanner />
       </div>
     </AuthProvider>
   )
